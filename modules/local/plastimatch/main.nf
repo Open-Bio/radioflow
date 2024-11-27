@@ -17,12 +17,14 @@ process PLASTIMATCH_CONVERT {
     tuple val(meta), path(input_dir)
 
     // 4. 进程输出定义
+    // conf/modules.config 中定义了输出文件的发布路径
     output:
     // 转换后的图像文件
     tuple val(meta), path("${meta.id}_0000.nii.gz"), emit: converted_image
 
     // 日志和版本输出
     // TODO: 日志和版本不知道如何使用
+    // NOTE: conf/modules.config 中声明了 versions.yml 不发布
     path("plastimatch_convert.log")          , emit: log
     path("versions.yml")                     , emit: versions
 
