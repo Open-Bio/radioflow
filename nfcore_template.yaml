@@ -1,0 +1,54 @@
+name: radiomics
+description: radiomics-flow is a pipeline for radiomics analysis
+author: fanxi
+org: biofree
+
+prefix: biofree
+skip:
+  - github
+  - ci
+  # - github_badges
+  - igenomes
+  - nf_core_configs
+template:
+  author: fanxi
+  description: radiomics-flow is a pipeline for radiomics analysis
+  force: true
+  is_nfcore: false
+  name: radiomics-flow
+  org: biofree
+  outdir: .
+  skip_features:
+    - github
+    - ci
+    - igenomes
+    - nf_core_configs
+    - code_linters
+    - citations
+    - gitpod
+    - codespaces
+    # - multiqc
+    - fastqc
+    - modules
+    - changelog
+    - nf_schema
+    - license
+    - email
+    - adaptivecard
+    - slackreport
+    - documentation
+    - test_config
+    - seqera_platform
+  version: 1.0.0dev
+
+# 许可证信息
+license:
+  type: MIT
+  year: 2024
+  organization: biofree
+
+# 联系方式
+contact:
+  email: fanxingfu3344@gmail.com
+  github: https://github.com/biofree
+  website: https://www.biofree.com
