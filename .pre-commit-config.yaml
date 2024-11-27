@@ -5,9 +5,18 @@ repos:
       - id: prettier
         additional_dependencies:
           - prettier@3.2.5
+        # 添加以下配置来指定要格式化的文件类型
+        types: [file] # 必须的基础类型
+        types_or: [css, javascript, jsx, ts, tsx, json, yaml, markdown] # 指定要格式化的文件类型
 
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
     rev: "3.0.3"
     hooks:
       - id: editorconfig-checker
         alias: ec
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.13.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
