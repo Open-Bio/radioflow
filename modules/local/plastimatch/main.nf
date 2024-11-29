@@ -5,10 +5,12 @@ process PLASTIMATCH_CONVERT {
 
     // 2. 环境和容器管理
     // conda "${moduleDir}/environment.yml" plastimatch 暂时无法使用conda安装
+
+    // 使用 Singularity 且不直接拉取 Docker 镜像时，需要使用 docker:// 前缀
     container "${
         workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker://lfabriko/plastimatch:latest' :
-        'lfabriko/plastimatch:latest'
+        'docker://august777/radiomics-plastimatch:1.4.7' :
+        'august777/radiomics-plastimatch:1.4.7'
     }"
 
     // 3. 进程输入定义
