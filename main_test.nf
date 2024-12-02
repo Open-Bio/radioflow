@@ -1,9 +1,10 @@
 // 引入外部模块：从本地的 'plastimatch' 模块中导入 PLASTIMATCH_CONVERT 转换工具
-include { PLASTIMATCH_CONVERT } from './modules/local/plastimatch/main.nf'
-include { LUNG_SEGMENTATION } from './modules/local/lungmask/main.nf'
-include { RESAMPLE } from './modules/local/resample'
-
+include { PLASTIMATCH_CONVERT   } from './modules/local/plastimatch'
+include { LUNG_SEGMENTATION     } from './modules/local/lungmask'
+include { RESAMPLE              } from './modules/local/resample'
+include { NNUNET_PREDICT        } from './modules/local/nnunet'
 // 数据通道创建和处理阶段
+
 samples_ch = Channel
     // 从指定路径读取 CSV 文件（通过 params.input 参数定义）
     .fromPath(params.input)
@@ -36,8 +37,15 @@ workflow {
     // 转换数据通道中的每个样本
     PLASTIMATCH_CONVERT(samples_ch)
 
+    // 对图像进行重采样
     RESAMPLE(PLASTIMATCH_CONVERT.out.converted_image)
 
     // 进行肺部分割
-    LUNG_SEGMENTATION(PLASTIMATCH_CONVERT.out.converted_image).view()
+    LUNG_SEGMENTATION(RESAMPLE.out.resample_nii)
+
+    // 使用nnUNet进行预测
+    // 使用collect()收集所有分割结果，然后传递给NNUNET_PREDICT
+    NNUNET_PREDICT(RESAMPLE.out.resample_nii
+        .map { meta, file -> file }
+        .collect(), path(params.model_dir))
 }
