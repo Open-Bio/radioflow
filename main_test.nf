@@ -47,5 +47,5 @@ workflow {
     // 使用collect()收集所有分割结果，然后传递给NNUNET_PREDICT
     NNUNET_PREDICT(RESAMPLE.out.resample_nii
         .map { meta, file -> file }
-        .collect(), path(params.model_dir))
+        .collect(), file(params.model_dir))
 }
