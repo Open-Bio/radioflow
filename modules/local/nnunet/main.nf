@@ -1,6 +1,6 @@
 // nnUNet预测进程
 process NNUNET_PREDICT {
-    tag "NNUNET_PREDICT"      // 设置任务标签，方便跟踪
+    tag "NNUNET_COLLECT"      // 设置任务标签，方便跟踪
     label 'process_gpu'       // 指定任务标签为 'process_gpu'，用于资源配置
 
     // 结果发布配置，将输出文件复制到指定目录
@@ -10,8 +10,8 @@ process NNUNET_PREDICT {
     // conda "${moduleDir}/environment.yml"
     container "${
         workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker://august777/radiomics-nnunet:1.0.1' :
-        'august777/radiomics-nnunet:1.0.1'
+        'docker://august777/radiomics-nnunet:2.0.0' :
+        'august777/radiomics-nnunet:2.0.0'
     }"
 
     // 资源配置（可根据需求调整）
@@ -24,10 +24,11 @@ process NNUNET_PREDICT {
 
     input:
     path input_files, stageAs: 'input/*'  // 输入文件（# TODO 仅匹配 .nii.gz 格式），并指定在容器内的路径
-    path model_dir                         // TODO 模型目录,定义在参数中才会自动挂载到容器内
+    path model_dir                         // TODO 模型目录,定义在参数中才会自动挂载到容器��
 
     output:
-    path "*.nii.gz", emit: predicted_images   // 输出预测的图像文件
+    path "input/*.nii.gz", emit: input_files         // 输出输入文件
+    path "output/*.nii.gz", emit: predicted_images   // 输出预测的图像文件
     path "versions.yml", emit: versions              // 输出版本信息文件
 
     script:
@@ -43,9 +44,7 @@ process NNUNET_PREDICT {
     nnunet_predict.py \\
         --model "${model_dir}" \\
         --input_folder "input" \\
-        --output_folder "nnunet"
-
-    mv nnunet/*.nii.gz .
+        --output_folder "output"
 
     # 收集版本信息，保存到 versions.yml 文件
     cat <<-END_VERSIONS > versions.yml
@@ -56,9 +55,16 @@ process NNUNET_PREDICT {
     stub:
     """
     # 生成占位符文件
-    touch hhhh.nii.gz
-    nvidia-smi >> hhhh.nii.gz
+    mkdir -p  output
+
+    for file in input/*.nii.gz; do
+        filename=\$(basename "\$file")
+        base=\${filename%.nii.gz}
+        touch "input/\${base}_0000.nii.gz"
+        touch "output/\${base}.nii.gz"
+    done
     touch versions.yml
+    nvidia-smi >> versions.yml
     """
 
 }
