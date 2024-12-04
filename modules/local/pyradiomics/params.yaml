@@ -1,0 +1,97 @@
+# PyRadiomics配置文件
+# 用于CT图像的特征提取基础配置
+# 创建时间：2024-12-03
+# 这个配置文件作为起点，需要根据具体数据集特点进行调整
+
+# 记录使用的PyRadiomics版本，便于后期重现结果
+############################# Extracted using PyRadiomics version: <version> #############################
+
+# 图像类型设置：定义需要提取特征的图像类型
+imageType:
+  # 原始图像，不进行任何过滤器处理
+  Original: {}
+
+  # LoG(Laplacian of Gaussian)滤波器设置
+  # 用于突出图像中的边缘和纹理特征
+  LoG:
+    # sigma值列表，控制高斯滤波的平滑程度
+    # 较小的sigma突出精细纹理，较大的sigma突出粗糙纹理
+    sigma: [1.0, 2.0, 3.0, 4.0, 5.0] # 如果使用>5的sigma值，需要增加padDistance
+
+  # 小波变换滤波器，用于多尺度纹理分析
+  Wavelet: {}
+
+# 特征类别设置：定义要计算的特征类型
+featureClass:
+  # 形状特征：描述ROI的几何特征
+  # 注：Compactness 1, Compactness 2和Spherical Disproportion默认被禁用
+  shape:
+
+  # 一阶统计特征：描述ROI内灰度值的分布特征
+  firstorder:
+
+  # 灰度共生矩阵特征：描述局部纹理特征
+  glcm: # 通过指定所有其他特征来禁用SumAverage
+    - "Autocorrelation" # 自相关：描述图像重复模式
+    - "JointAverage" # 联合平均：描述灰度值的总体均值
+    - "ClusterProminence" # 聚类显著性：衡量灰度值分布的不对称性
+    - "ClusterShade" # 聚类阴影：也是衡量灰度值分布的不对称性
+    - "ClusterTendency" # 聚类趋势：衡量图像中聚类的程度
+    - "Contrast" # 对比度：衡量局部灰度值变化
+    - "Correlation" # 相关性：衡量灰度值的线性依赖性
+    - "DifferenceAverage" # 差异平均：衡量灰度值对之间的平均差异
+    - "DifferenceEntropy" # 差异熵：衡量灰度值差异的不确定性
+    - "DifferenceVariance" # 差异方差：衡量灰度值差异的变化程度
+    - "JointEnergy" # 联合能量：衡量灰度值对的均匀性
+    - "JointEntropy" # 联合熵：衡量灰度值分布的随机性
+    - "Imc1" # 信息测度相关1：基于互信息的相关性度量
+    - "Imc2" # 信息测度相关2：另一种基于互信息的相关性度量
+    - "Idm" # 逆差矩：衡量局部均匀性
+    - "Idmn" # 归一化逆差矩
+    - "Id" # 逆差：类似逆差矩
+    - "Idn" # 归一化逆差
+    - "InverseVariance" # 逆方差：另一种局部均匀性度量
+    - "MaximumProbability" # 最大概率：最常出现的灰度值对的概率
+    - "SumEntropy" # 和熵：基于灰度值和的分布熵
+    - "SumSquares" # 和平方：灰度值和的方差
+
+  # 灰度游程长度矩阵特征：描述相同灰度值连续出现的长度分布
+  glrlm:
+
+  # 灰度大小区域矩阵特征：描述相同灰度值连续区域的大小分布
+  glszm:
+
+  # 灰度依赖矩阵特征：描述一个像素与其邻域的依赖关系
+  gldm:
+
+# 图像处理和特征提取的一般设置
+setting:
+  # 标准化设置
+  # 对于CT图像通常不需要，因为CT值（HU）是标准化的世界单位
+  # 如果使用不同的扫描仪/厂商，请检查特征是否与扫描仪相关
+  #normalize: true
+  #normalizeScale: 500  # 控制分bin宽度的标准化比例
+
+  # 重采样设置
+  # CT图像的常见间距接近1或2mm
+  interpolator: "sitkBSpline" # B样条插值方法，提供平滑的重采样结果
+  resampledPixelSpacing: [0.4, 0.4, 0.4] # 重采样后的体素大小，单位为mm
+  padDistance: 10 # 图像填充距离，为大sigma值的LoG滤波预留空间
+
+  # 掩膜验证设置
+  # 由于图像和掩膜都会被重采样，通常不需要correctMask和geometryTolerance
+  # 如果预期有很小的掩膜，可以启用以下大小约束：
+  minimumROIDimensions: 2 # ROI的最小维度要求
+  minimumROISize: 50 # ROI的最小体素数要求
+
+  # 图像离散化设置
+  # 理想的bin数在16-128之间
+  # 可以通过分析数据集的firstorder:Range来确定合适的binWidth
+  binWidth: 25 # 灰度级分组宽度
+
+  # 一阶特征专用设置
+  voxelArrayShift: 1000 # CT值最小为-1000，平移+1000防止负值被平方
+
+  # 其他设置
+  # 默认标签值，也可以在特征提取时通过其他方式指定
+  label: 1 # ROI的标签值
