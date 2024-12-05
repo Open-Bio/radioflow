@@ -12,6 +12,8 @@ samples_ch = Channel
     .fromPath(params.input)
     .ifEmpty { exit 1, "未找到输入 CSV 文件" }
     // 将 CSV 文件按行拆分，识别表头
+    .ifEmpty { exit 1, "未找到输入 CSV 文件" }
+    // 将 CSV 文件按行拆分，识别表头
     // sample,path
     // SAMPLE_1,/path/to/data/SAMPLE_1/CT
     // SAMPLE_2,/path/to/data/SAMPLE_2/CT
@@ -19,15 +21,22 @@ samples_ch = Channel
     .splitCsv(header: true)
 
 
+
     // 对每一行记录进行数据转换和元数据构建
+    .map { row ->
     .map { row ->
         // 创建元数据对象，使用 sample 列作为唯一标识符
         def meta = [
             id: row.sample,
             patient_id: row.patient_id ?: row.sample
         ]
+        def meta = [
+            id: row.sample,
+            patient_id: row.patient_id ?: row.sample
+        ]
 
         // 将路径转换为文件对象
+        def input_dir = file(row.path)
         def input_dir = file(row.path)
 
         // 返回元组：(元数据, 输入目录)
