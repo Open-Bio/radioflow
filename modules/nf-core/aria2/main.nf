@@ -45,7 +45,3 @@ process ARIA2 {
     END_VERSIONS
     """
 }
-
-workflow {
-    ARIA2("https://zenodo.org/record/4003545/files/Task006_Lung.zip?download=1")
-}

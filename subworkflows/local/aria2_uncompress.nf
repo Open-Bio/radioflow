@@ -53,5 +53,5 @@ workflow ARIA2_UNCOMPRESS {
 // TODO 如果下载解压后的是文件夹？后续流程取其中的子文件夹
 workflow{
     //"https://zenodo.org/record/4003545/files/Task006_Lung.zip
-    ARIA2_UNCOMPRESS("https://zenodo.org/record/4003545/files/Task006_Lung.zip?download=1")
+    ARIA2_UNCOMPRESS("https://zenodo.org/record/4003545/files/Task006_Lung.zip")
 }
