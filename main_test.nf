@@ -5,6 +5,8 @@ include { RESAMPLE              } from './modules/local/resample'
 include { NNUNET_PREDICT        } from './modules/local/nnunet'
 include { PYRADIOMICS as FEATURES_CT } from './modules/local/pyradiomics'
 include { MERGE_FEATURES } from './modules/local/pyradiomics'
+
+include { VISUAL_SLICE } from './modules/local/visualization'
 // 数据通道创建和处理阶段
 
 samples_ch = Channel
@@ -12,33 +14,20 @@ samples_ch = Channel
     .fromPath(params.input)
     .ifEmpty { exit 1, "未找到输入 CSV 文件" }
     // 将 CSV 文件按行拆分，识别表头
-    .ifEmpty { exit 1, "未找到输入 CSV 文件" }
-    // 将 CSV 文件按行拆分，识别表头
     // sample,path
     // SAMPLE_1,/path/to/data/SAMPLE_1/CT
     // SAMPLE_2,/path/to/data/SAMPLE_2/CT
     // SAMPLE_3,/path/to/data/SAMPLE_3/CT
     .splitCsv(header: true)
-
-
-
     // 对每一行记录进行数据转换和元数据构建
-    .map { row ->
     .map { row ->
         // 创建元数据对象，使用 sample 列作为唯一标识符
         def meta = [
             id: row.sample,
             patient_id: row.patient_id ?: row.sample
         ]
-        def meta = [
-            id: row.sample,
-            patient_id: row.patient_id ?: row.sample
-        ]
-
         // 将路径转换为文件对象
         def input_dir = file(row.path)
-        def input_dir = file(row.path)
-
         // 返回元组：(元数据, 输入目录)
         tuple(meta, input_dir)
     }
@@ -60,9 +49,7 @@ workflow {
         .map { meta, file -> file }
         .collect(), file(params.model_dir))
 
-        // 提取影像特征
-    FEATURES_CT(
-        NNUNET_PREDICT.out.predicted_images.flatten()
+    predict_ch = NNUNET_PREDICT.out.predicted_images.flatten()
             .map { predicted_image ->
                 def predicted_name = predicted_image.toString().split('/').last().replace('_resample.nii.gz', '')
                 // 修改这部分，确保从 input 目录获取文件
@@ -74,9 +61,10 @@ workflow {
                 def meta = [id: common_id]
                 tuple(meta, input_file, predicted_image)
             }
-    )
+        // 提取影像特征
+    FEATURES_CT(predict_ch)
 
-   FEATURES_CT.out.features
+    FEATURES_CT.out.features
     .map { meta, features_csv ->
         features_csv
     }
@@ -84,4 +72,5 @@ workflow {
     .set { features_to_merge }
 
     MERGE_FEATURES(features_to_merge)
+    VISUAL_SLICE(predict_ch)
 }
