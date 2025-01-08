@@ -1,0 +1,17 @@
+channels:
+  - defaults
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - pip:
+      - lungmask==0.2.20
+      - fill_voids
+      - more-itertools
+      - numpy
+      - pydicom
+      - scikit-image
+      - scipy
+      - SimpleITK
+      - torch
+      - tqdm

@@ -3,7 +3,10 @@ work/
 data/
 results/
 .DS_Store
+test/
 testing/
 testing*
 *.pyc
 null/
+.git/COMMIT_EDITMSG
+modules/local/nnunet/models/*
